@@ -42,6 +42,6 @@ The plugin connects to any OpenAI-compatible API. Default URL: `http://localhost
 
 Works with [LM Studio](https://lmstudio.ai/) and similar tools. Just start your local server and paste the URL in the plugin.
 
-## Made by
+## Contacts
 
 [Andrushkevich Stepan telegram link](https://t.me/necrondesign)
