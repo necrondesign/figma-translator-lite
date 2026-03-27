@@ -44,4 +44,4 @@ Works with [LM Studio](https://lmstudio.ai/) and similar tools. Just start your 
 
 ## Made by
 
-[Andrushkevich Stepan](https://t.me/necrondesign)
+[Andrushkevich Stepan telegram link](https://t.me/necrondesign)
