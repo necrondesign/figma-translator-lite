@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Inter', sans-serif; overflow: hidden; 
+            background: #2C2C2C; color: #ffffff;
+            box-sizing: border-box;
+        }
+        *, *:before, *:after { box-sizing: inherit; }
+        *:focus { outline: none; }
+
+        .figma-menu {
+            display: flex; flex-direction: column; align-items: flex-start;
+            padding: 8px; position: absolute; width: 157px;
+            background: #1E1E1E;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.35), 0px 10px 16px rgba(0, 0, 0, 0.35), 
+                        inset 0px 0px 0.5px rgba(255, 255, 255, 0.35), inset 0px 0.5px 0px rgba(255, 255, 255, 0.08);
+            border-radius: 13px; z-index: 1000;
+        }
+        .menu-item {
+            display: flex; flex-direction: row; align-items: center;
+            padding: 4px 12px; width: 141px; height: 24px;
+            cursor: pointer; color: #ffffff; font-size: 11px;
+            font-weight: 500; border-radius: 5px; transition: background 0.1s;
+        }
+        .menu-item:hover { background: #0C8CE9; }
+
+        /* Стили селекта */
+        .select-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1px;
+            width: 100%;
+            height: 24px;
+        }
+
+        .select-left-frame {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0px 8px;
+            flex-grow: 1;
+            height: 24px;
+            background: #383838;
+            border-radius: 5px 0px 0px 5px;
+            cursor: pointer;
+        }
+
+        .select-right-frame {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #383838;
+            border-radius: 0px 5px 5px 0px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .select-text {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 11px;
+            line-height: 13px;
+            letter-spacing: 0.055px;
+            color: #FFFFFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Обновленные стили полей ввода API и URL */
+        .input-container-single { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+            justify-content: center;
+            padding: 0px 8px; 
+            width: 100%; 
+            height: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 5px; 
+            background: transparent; 
+            margin-top: 8px;
+            transition: border-color 0.1s;
+        }
+        .input-container-single:focus-within { 
+            border-color: #0C8CE9; 
+        }
+        .input-field { 
+            background: transparent; 
+            border: none; 
+            outline: none; 
+            width: 100%; 
+            height: 13px; 
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 11px;
+            line-height: 13px;
+            letter-spacing: 0.055px;
+            color: #FFFFFF; 
+            display: flex;
+            align-items: center;
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Базовые стили кнопок и фреймов */
+        .btn-base { height: 32px; border-radius: 5px; font-weight: 500; font-size: 11px; width: 100%; transition: all 0.1s ease; display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 0 12px; border: none; }
+        .btn-idle { background: #383838; color: rgba(255, 255, 255, 0.4); }
+        .btn-active { background: #0C8CE9; color: #FFFFFF; cursor: pointer; }
+        .btn-done { background: #394360; color: #7CC4F8; }
+        .btn-error { background: #E03E1A; color: #FFFFFF; }
+
+        .frame-header { height: 56px; border-bottom: 1px solid #444444; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; flex-shrink: 0; width: 100%; }
+        .frame-provider-exp { height: 120px; border-bottom: 1px solid #444444; padding: 0 16px 16px; flex-shrink: 0; width: 100%; }
+        .frame-provider-min { height: 88px; border-bottom: 1px solid #444444; padding: 0 16px 16px; flex-shrink: 0; width: 100%; }
+        .frame-normal { height: 88px; border-bottom: 1px solid #444444; padding: 0 16px 16px; flex-shrink: 0; width: 100%; }
+        .frame-footer { flex-grow: 1; padding: 16px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%; }
+        
+        .label-text { height: 48px; display: flex; align-items: center; font-weight: 600; font-size: 11px; color: #FFFFFF; }
+        
+        .status-box { border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; height: 24px; width: 100%; padding: 0 8px; display: flex; align-items: center; font-size: 11px; color: rgba(255, 255, 255, 0.4); }
+
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="select-none">
+    <div id="root" class="w-full h-full"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const LANGUAGES = [
+            { code: 'ru', name: 'Russian' }, { code: 'en', name: 'English' }, { code: 'de', name: 'German' }, 
+            { code: 'pl', name: 'Polish' }, { code: 'ar', name: 'Arabic' }, { code: 'zh', name: 'Chinese' }
+        ];
+
+        const PROVIDERS = [
+            { id: 'google-free', name: 'Google translator' },
+            { id: 'gemini-cloud', name: 'Gemini API Key' },
+            { id: 'lm-studio', name: 'Local LLM Server' }
+        ];
+
+        const NecronLogo = () => (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path fillRule="evenodd" clipRule="evenodd" d="M14.65 6.94L16.9 5.71L19.15 6.94V18.06L16.9 19.3L12.24 16.67L12.09 13.89L9.68 15.13L9.52 18.06L7.27 19.3L5.02 18.06V6.94L7.27 5.71L9.52 6.94V9.72L11.93 11.11L12.09 13.89L14.65 12.5V6.94Z" fill="black"/>
+                <path d="M7.27 5.55L4.86 6.94L7.27 8.33L9.68 6.94L7.27 5.55Z" fill="white"/>
+                <path d="M16.9 5.55L14.49 6.94L16.9 8.33L19.31 6.94L16.9 5.55Z" fill="white"/>
+                <path d="M9.68 9.72L7.27 11.11L9.68 12.5L12.09 11.11L9.68 9.72Z" fill="white"/>
+                <path d="M14.49 6.94L16.9 8.33V19.45L14.49 18.06V6.94Z" fill="#3024F5"/>
+                <path d="M7.27 8.33L9.68 6.94V9.72L7.27 11.11V8.33Z" fill="black"/>
+                <path d="M16.9 13.89V8.33L19.31 6.94V18.06L16.9 19.45V16.67L14.49 18.06V15.28L16.9 13.89Z" fill="black"/>
+                <path d="M9.68 12.5L12.09 11.11V13.89L9.68 15.28V12.5Z" fill="black"/>
+                <path d="M7.27 13.89L9.68 12.5V18.06L7.27 19.45V13.89Z" fill="black"/>
+                <path d="M7.27 13.89V19.45L4.86 18.06V6.94L7.27 8.33V11.11L9.68 12.5V15.28L7.27 13.89Z" fill="#3024F5"/>
+                <path d="M12.09 13.89L14.49 15.28V18.06L12.09 16.67V13.89Z" fill="#3024F5"/>
+                <path d="M14.49 12.5L12.09 13.89L14.49 15.28L16.9 13.89L14.49 12.5Z" fill="white"/>
+            </svg>
+        );
+
+        const TelegramIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.15105 7.72122C4.17408 7.17689 5.31605 6.72259 6.38306 6.26597C8.21872 5.51806 10.0617 4.78311 11.9232 4.09888C12.2854 3.9823 12.9362 3.86832 13 4.38679C12.9651 5.12068 12.8213 5.85028 12.7227 6.57987C12.4725 8.18432 12.1832 9.78327 11.9012 11.3824C11.804 11.9151 11.1132 12.1909 10.6712 11.85C9.60894 11.1569 8.53851 10.4705 7.48981 9.76136C7.14624 9.42415 7.46487 8.93998 7.7716 8.6992C8.64651 7.86626 9.57437 7.15872 10.4036 6.28281C10.6272 5.76103 9.96636 6.20074 9.74838 6.3355C8.55061 7.13279 7.38216 7.97876 6.11935 8.67948C5.47431 9.02247 4.72249 8.72935 4.07774 8.53795C3.49964 8.30675 2.65252 8.07379 3.15098 7.72129L3.15105 7.72122Z" fill="white"/>
+            </svg>
+        );
+
+        const CheckIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.584 3.723C11.6592 3.6169 11.7729 3.54429 11.9007 3.52058C12.0286 3.49688 12.1607 3.52394 12.269 3.59603C12.3773 3.66812 12.4532 3.77956 12.4806 3.9067C12.5081 4.03384 12.4849 4.16667 12.416 4.277L7.41601 11.777C7.37481 11.8384 7.32056 11.8899 7.25714 11.9279C7.19372 11.9659 7.12269 11.9894 7.04913 11.9968C6.97557 12.0041 6.90129 11.9951 6.83161 11.9705C6.76192 11.9458 6.69854 11.906 6.64601 11.854L3.64601 8.854C3.55212 8.76012 3.49937 8.63278 3.49937 8.5C3.49937 8.36723 3.55212 8.23989 3.64601 8.146C3.73989 8.05212 3.86723 7.99937 4.00001 7.99937C4.13278 7.99937 4.26012 8.05212 4.35401 8.146L6.92201 10.715L11.584 3.723Z" fill="currentColor"/>
+            </svg>
+        );
+
+        const DropdownChevronIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M5.64689 7.14689C5.69334 7.10033 5.74852 7.06339 5.80926 7.03818C5.87001 7.01297 5.93513 7 6.00089 7C6.06666 7 6.13178 7.01297 6.19253 7.03818C6.25327 7.06339 6.30845 7.10033 6.35489 7.14689L8.00089 8.79389L9.64689 7.14689C9.69338 7.10041 9.74857 7.06353 9.80931 7.03837C9.87005 7.01321 9.93515 7.00026 10.0009 7.00026C10.0666 7.00026 10.1317 7.01321 10.1925 7.03837C10.2532 7.06353 10.3084 7.10041 10.3549 7.14689C10.4014 7.19338 10.4383 7.24857 10.4634 7.30931C10.4886 7.37005 10.5015 7.43515 10.5015 7.50089C10.5015 7.56664 10.4886 7.63174 10.4634 7.69248C10.4383 7.75322 10.4014 7.80841 10.3549 7.85489L8.35489 9.85489C8.30845 9.90146 8.25327 9.9384 8.19253 9.96361C8.13178 9.98881 8.06666 10.0018 8.00089 10.0018C7.93513 10.0018 7.87001 9.98881 7.80926 9.96361C7.74852 9.9384 7.69334 9.90146 7.64689 9.85489L5.64689 7.85489C5.60033 7.80845 5.56339 7.75327 5.53818 7.69253C5.51297 7.63178 5.5 7.56666 5.5 7.50089C5.5 7.43513 5.51297 7.37001 5.53818 7.30926C5.56339 7.24852 5.60033 7.19334 5.64689 7.14689Z" fill="white"/>
+            </svg>
+        );
+
+        // Новый кастомный лоадер
+        const LoaderIcon = () => (
+            <svg className="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 2C11.1454 2 13.7255 4.42031 13.9795 7.50015C14.0022 7.77536 13.7761 8 13.5 8C13.2239 8 13.0026 7.7755 12.9754 7.5007C12.7248 4.9737 10.5929 3 8 3C5.23858 3 3 5.23858 3 8C3 10.5929 4.9737 12.7248 7.5007 12.9754C7.7755 13.0026 8 13.2239 8 13.5C8 13.7761 7.77536 14.0022 7.50015 13.9795C4.42031 13.7255 2 11.1454 2 8C2 4.68629 4.68629 2 8 2Z" fill="white"/>
+            </svg>
+        );
+
+        const App = () => {
+            const [count, setCount] = useState(0);
+            const [target, setTarget] = useState('ru');
+            const [status, setStatus] = useState('idle');
+            const [provider, setProvider] = useState("google-free");
+            const [apiKey, setApiKey] = useState("");
+            const [localUrl, setLocalUrl] = useState("http://localhost:1234/v1");
+            const [activeDropdown, setActiveDropdown] = useState(null); 
+
+            useEffect(() => {
+                if (status === 'success' || status === 'error') setStatus('idle');
+            }, [provider, target]);
+
+            useEffect(() => {
+                window.onmessage = (e) => {
+                    const msg = e.data.pluginMessage;
+                    if (!msg) return;
+                    if (msg.type === 'settings-loaded') {
+                        setApiKey(msg.apiKey || ""); 
+                        setLocalUrl(msg.localUrl?.replace('127.0.0.1', 'localhost') || "http://localhost:1234/v1"); 
+                        setProvider(msg.provider || "google-free");
+                    }
+                    if (msg.type === 'selection-change') { setCount(msg.count); setStatus('idle'); }
+                    if (msg.type === 'start-api-call') translateAll(msg);
+                    if (msg.type === 'apply-data-success') setStatus('success');
+                    if (msg.type === 'error') setStatus('error');
+                };
+            }, []);
+
+            const translateAll = async (msg) => {
+                const { payload, target, provider, apiKey, localUrl } = msg;
+                setStatus('loading');
+                try {
+                    const targetLangName = LANGUAGES.find(l => l.code === target)?.name;
+                    let results = [];
+                    
+                    if (provider === 'google-free') {
+                        for (const item of payload) {
+                            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(item.text)}`);
+                            const data = await res.json();
+                            results.push({ id: item.id, translatedText: data[0].map(p => p[0]).join('') });
+                        }
+                    } else {
+                        let cleanUrl = localUrl.replace('127.0.0.1', 'localhost').trim().replace(/\/$/, '');
+                        if (provider === 'lm-studio' && !cleanUrl.endsWith('/v1')) cleanUrl += '/v1';
+                        
+                        const endpoint = provider === 'lm-studio' ? `${cleanUrl}/chat/completions` : `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=${apiKey}`;
+                        
+                        const requestBody = {
+                            model: provider === 'lm-studio' ? "local-model" : "gemini-1.5-flash",
+                            messages: [
+                                { 
+                                    role: "system", 
+                                    content: `Translate to ${targetLangName}. 
+                                    IMPORTANT RULES: 
+                                    1. Do NOT translate brand names, proper nouns, or technical terms (e.g., "API", "Gemini", "UI", "UX", "Apple"). Leave them strictly in their original language.
+                                    2. Strictly output valid JSON only: {"results": [{"id": "...", "translatedText": "..."}]}` 
+                                }, 
+                                { role: "user", content: JSON.stringify(payload) }
+                            ],
+                            temperature: 0.1, 
+                            stream: false
+                        };
+
+                        if (provider === 'gemini-cloud') {
+                            requestBody.response_format = { type: "json_object" };
+                        }
+
+                        const headers = { 'Content-Type': 'application/json' };
+
+                        const res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestBody)
+                        });
+
+                        if (!res.ok) {
+                            const errTxt = await res.text();
+                            throw new Error(`HTTP Error: ${res.status} - Server said: ${errTxt}`);
+                        }
+                        
+                        const data = await res.json();
+                        
+                        if (!data || !data.choices || data.choices.length === 0) {
+                            console.error("LM Studio returned incomplete data:", data);
+                            throw new Error("Invalid response format from LM Studio. See console for details.");
+                        }
+
+                        let answer = data.choices[0].message.content;
+                        
+                        answer = answer.replace(/```json/gi, '').replace(/```/g, '').trim();
+                        
+                        results = JSON.parse(answer).results;
+                    }
+                    parent.postMessage({ pluginMessage: { type: 'apply-data', results } }, '*');
+                } catch (e) { 
+                    console.error("Translation Network/API Error:", e);
+                    setStatus('error'); 
+                }
+            };
+
+            const run = () => {
+                parent.postMessage({ pluginMessage: { type: 'save-settings', apiKey, localUrl, provider } }, '*');
+                parent.postMessage({ pluginMessage: { type: 'run-translation', target, apiKey, localUrl, provider } }, '*');
+            };
+
+            const openTelegram = () => {
+                window.open('https://t.me/necrondesign', '_blank');
+            };
+
+            const CustomSelect = ({ value, options, onSelect, dropdownId }) => {
+                const isOpen = activeDropdown === dropdownId;
+                const selectedLabel = options.find(o => (o.id || o.code) === value)?.name;
+
+                return (
+                    <div className="relative w-full">
+                        <div className="select-wrapper" onClick={() => setActiveDropdown(isOpen ? null : dropdownId)}>
+                            <div className="select-left-frame">
+                                <span className="select-text">{selectedLabel}</span>
+                            </div>
+                            <div className="select-right-frame">
+                                <DropdownChevronIcon />
+                            </div>
+                        </div>
+                        {isOpen && (
+                            <div className="figma-menu" style={{top: '-8px', right: '0'}}>
+                                {options.map(opt => (
+                                    <div key={opt.id || opt.code} className="menu-item" onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSelect(opt.id || opt.code);
+                                        setActiveDropdown(null);
+                                    }}>
+                                        <div className="w-[16px] mr-1 text-white">{(opt.id || opt.code) === value && <CheckIcon />}</div>
+                                        {opt.name}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            return (
+                <div className="flex flex-col w-full h-full bg-[#2C2C2C] relative">
+                    {activeDropdown && (
+                        <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)}></div>
+                    )}
+
+                    <div className="frame-header">
+                        <div className="flex items-center gap-[12px]"><NecronLogo /><span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] truncate w-[120px]">Andrushkevich Stepan</span></div>
+                        <div onClick={openTelegram} className="w-[24px] h-[24px] bg-[#383838] rounded-[5px] flex items-center justify-center cursor-pointer hover:bg-[#0C8CE9] transition-colors relative z-10">
+                            <TelegramIcon />
+                        </div>
+                    </div>
+
+                    <div className={provider === 'google-free' ? 'frame-provider-min' : 'frame-provider-exp'}>
+                        <div className="label-text">Translation provider</div>
+                        <div className="flex flex-col">
+                            <CustomSelect 
+                                dropdownId="provider"
+                                value={provider}
+                                options={PROVIDERS}
+                                onSelect={setProvider}
+                            />
+                            {provider !== 'google-free' && (
+                                <div className="input-container-single">
+                                    <input 
+                                        type={provider === 'gemini-cloud' ? "password" : "text"} 
+                                        value={provider === 'gemini-cloud' ? apiKey : localUrl} 
+                                        onChange={(e) => provider === 'gemini-cloud' ? setApiKey(e.target.value) : setLocalUrl(e.target.value)} 
+                                        placeholder={provider === 'gemini-cloud' ? "Paste key here" : "http://localhost:1234/v1"} 
+                                        className="input-field" 
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="frame-normal relative z-40">
+                        <div className="label-text">Translation to</div>
+                        <CustomSelect 
+                            dropdownId="language"
+                            value={target}
+                            options={LANGUAGES}
+                            onSelect={(val) => { setTarget(val); setStatus('idle'); }}
+                        />
+                    </div>
+
+                    <div className="frame-normal relative z-10">
+                        <div className="label-text">Selection</div>
+                        <div className="status-box"><span className={count > 0 ? 'text-white' : ''}>{count > 0 ? `${count} layers selected` : 'No selection'}</span></div>
+                    </div>
+
+                    <div className="frame-footer relative z-10">
+                        <div className="w-full flex flex-col gap-2">
+                            <button onClick={run} disabled={status === 'loading' || count === 0} className={`btn-base shadow-sm ${status === 'loading' ? 'btn-idle' : status === 'success' ? 'btn-done' : status === 'error' ? 'btn-error' : (count > 0 ? 'btn-active' : 'btn-idle')}`}>
+                                {status === 'loading' ? (
+                                    <>
+                                        <LoaderIcon />
+                                        <div className="px-[4px] flex items-center justify-center">
+                                            <span>Processing...</span>
+                                        </div>
+                                    </>
+                                ) : status === 'success' ? (
+                                    <>
+                                        <div className="w-[16px] h-[16px] text-[#7CC4F8] flex items-center justify-center">
+                                            <CheckIcon />
+                                        </div>
+                                        <div className="flex flex-row items-center justify-center px-[4px]">
+                                            <span className="font-medium text-[11px] leading-[16px] tracking-[0.055px] text-[#7CC4F8]">Done</span>
+                                        </div>
+                                    </>
+                                ) : status === 'error' ? (
+                                    <span>Error</span>
+                                ) : (
+                                    <span>Translate selection</span>
+                                )}
+                            </button>
+                            <div className="h-[32px] flex items-center justify-center text-center">
+                                <span className="text-[8px] font-medium uppercase text-[rgba(255,255,255,0.1)] tracking-[0.055px]">
+                                    {provider === 'lm-studio' ? 'POWERED BY LOCAL LLM' : provider === 'gemini-cloud' ? 'POWERED BY GEMINI API' : 'POWERED BY GOOGLE TRANSLATE'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
